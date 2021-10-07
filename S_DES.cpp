@@ -11,16 +11,16 @@ unsigned char const S_DES::S0[4][4] = {{1,0,3,2},{3,2,1,0},{0,2,1,3},{3,1,3,2}};
 unsigned char const S_DES::S1[4][4] = {{0,1,2,3},{2,0,1,3},{3,0,1,0},{2,1,0,3}};
 unsigned char const S_DES::P4[4]    = {2,4,3,1};
 
-unsigned char S_DES::encrypt(std::string plain, std::string key, bool verbose)
+unsigned char S_DES::execute(std::string inputString, std::string key, bool verbose, bool encrypt)
 {
     // Declare bitsets
     std::tuple<std::bitset<8>, std::bitset<8>> subkeys;
     std::tuple<std::bitset<4>, std::bitset<4>> outputR1, outputR2;
-    std::bitset<8> input, ip, fp, k1, k2, sw, roundsOut, ciphertext;
+    std::bitset<8> input, ip, fp, k1, k2, sw, roundsOut, output;
     std::bitset<10> keyBits;
 
     // Convert to bitset and push plain bits
-    input = std::bitset<8>(plain);
+    input = std::bitset<8>(inputString);
 
     // Apply initial permutation
     ip = S_DES::permute<8,8>(input, S_DES::IP);
@@ -29,7 +29,7 @@ unsigned char S_DES::encrypt(std::string plain, std::string key, bool verbose)
     if (verbose)
     {
         std::cout << "Parameters:\n";
-        std::cout << "Plain:\t" << input << "\n";       // Received plaintext bits
+        std::cout << "Input:\t" << input << "\n";       // Received bits
         std::cout << "Key:\t" << key << "\n";           // Received key bits
         std::cout << "IP:\t" << ip << "\n\n";           // Initial permutation result
     } // End if
@@ -45,7 +45,10 @@ unsigned char S_DES::encrypt(std::string plain, std::string key, bool verbose)
     k2 = std::get<1>(subkeys);
 
     // Execute round 1
-    outputR1 = S_DES::doRound(ip, k1, verbose);
+    if (encrypt)
+        outputR1 = S_DES::doRound(ip, k1, verbose);
+    else
+        outputR1 = S_DES::doRound(ip, k2, verbose);
 
     // Join applying switch operation
     for (int i = 0; i < 8; i++)
@@ -62,7 +65,10 @@ unsigned char S_DES::encrypt(std::string plain, std::string key, bool verbose)
         std::cout << "SW:\t" << sw << "\n";
 
     // Execute round 2
-    outputR2 = S_DES::doRound(sw, k2, verbose);
+    if (encrypt)
+        outputR2 = S_DES::doRound(sw, k2, verbose);
+    else
+        outputR2 = S_DES::doRound(sw, k1, verbose);
 
     // Join round 2 results
     for (int i = 0; i < 8; i++)
@@ -75,29 +81,31 @@ unsigned char S_DES::encrypt(std::string plain, std::string key, bool verbose)
     } // End for   
 
     // Apply final permutation
-    ciphertext = S_DES::permute<8,8>(roundsOut,S_DES::FP);
+    output = S_DES::permute<8,8>(roundsOut,S_DES::FP);
 
     if (verbose)
     {
         std::cout << "\nOutput:\n";
         std::cout << "Rounds:\t" << roundsOut << "\n";  // Received plaintext bits
-        std::cout << "IP-1:\t" << ciphertext << "\n\n"; // Final permutation result
+        std::cout << "IP-1:\t" << output << "\n\n"; // Final permutation result
     } // End if
 
-    return static_cast<unsigned char>( ciphertext.to_ulong() );
+    return static_cast<unsigned char>( output.to_ulong() );
+
+} // End execute
+
+unsigned char S_DES::decrypt(std::string cipher, std::string key, bool verbose)
+{
+    return S_DES::execute(cipher,key,verbose,false);
+
+} // End decrypt
+
+unsigned char S_DES::encrypt(std::string plain, std::string key, bool verbose)
+{
+    return S_DES::execute(plain,key,verbose,true);
 
 } // End encrypt
 
-unsigned char S_DES::decrypt(std::string plain, std::string key, bool verbose)
-{
-    std::tuple<std::bitset<8>, std::bitset<8>> subkeys;
-    std::tuple<std::bitset<4>, std::bitset<4>> outputR1, outputR2;
-    std::bitset<8> input, ip, fp, k1, k2, sw, roundsOut, plaintext;
-    std::bitset<10> keyBits;
-
-    return static_cast<unsigned char>( plaintext.to_ulong() );
-
-} // End decrypt
 
 template <size_t IN, size_t OUT>
 std::bitset<OUT> S_DES::permute(std::bitset<IN> bits, const unsigned char* table)
@@ -267,7 +275,7 @@ std::tuple<std::bitset<4>, std::bitset<4>> S_DES::doRound(std::bitset<8> input, 
 
     if (verbose)
     {
-        std::cout << "\nEncryption round: \n";
+        std::cout << "\nRound: \n";
         std::cout << "Input:\t" << input << "\n";                                                               // Input bits
         std::cout << "EP (R):\t" << expanded << " <- " << subkey << " (SK) \n";                                 // Expansion and subkey
         std::cout << "XOR:\t" << xorSubkey << "\n";                                                             // XOR with subkey
