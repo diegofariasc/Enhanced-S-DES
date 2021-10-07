@@ -11,7 +11,7 @@ unsigned char const S_DES::S0[4][4] = {{1,0,3,2},{3,2,1,0},{0,2,1,3},{3,1,3,2}};
 unsigned char const S_DES::S1[4][4] = {{0,1,2,3},{2,0,1,3},{3,0,1,0},{2,1,0,3}};
 unsigned char const S_DES::P4[4]    = {2,4,3,1};
 
-unsigned char S_DES::execute(std::string inputString, std::string key, bool verbose, bool encrypt)
+unsigned char S_DES::execute(char inputChar, std::string key, bool verbose, bool encrypt)
 {
     // Declare bitsets
     std::tuple<std::bitset<8>, std::bitset<8>> subkeys;
@@ -20,7 +20,7 @@ unsigned char S_DES::execute(std::string inputString, std::string key, bool verb
     std::bitset<10> keyBits;
 
     // Convert to bitset and push plain bits
-    input = std::bitset<8>(inputString);
+    input = std::bitset<8>(inputChar);
 
     // Apply initial permutation
     ip = S_DES::permute<8,8>(input, S_DES::IP);
@@ -94,13 +94,13 @@ unsigned char S_DES::execute(std::string inputString, std::string key, bool verb
 
 } // End execute
 
-unsigned char S_DES::decrypt(std::string cipher, std::string key, bool verbose)
+unsigned char S_DES::decrypt(char cipher, std::string key, bool verbose)
 {
     return S_DES::execute(cipher,key,verbose,false);
 
 } // End decrypt
 
-unsigned char S_DES::encrypt(std::string plain, std::string key, bool verbose)
+unsigned char S_DES::encrypt(char plain, std::string key, bool verbose)
 {
     return S_DES::execute(plain,key,verbose,true);
 

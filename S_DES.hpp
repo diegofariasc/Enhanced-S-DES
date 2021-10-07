@@ -7,15 +7,15 @@ class S_DES
     public:
 
         // Encryption method
-        static unsigned char encrypt (std::string plain, std::string key, bool verbose=false);
+        static unsigned char encrypt (char plain, std::string key, bool verbose=false);
 
         // Decryption method
-        static unsigned char decrypt(std::string cipher, std::string key, bool verbose=false);
+        static unsigned char decrypt(char cipher, std::string key, bool verbose=false);
 
     private: 
 
         // Method for executing the algorithm 
-        static unsigned char execute(std::string plain, std::string key, bool encrypt, bool verbose);
+        static unsigned char execute(char inputChar, std::string key, bool encrypt, bool verbose);
 
         // 10-bit key permutation table
         static unsigned char const P10[10];
