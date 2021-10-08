@@ -23,7 +23,7 @@ std::string ES_DES::encrypt(std::string plain, std::string key, bool verbose)
     } // End for
 
     // Row shifting
-    rowShifted = SCT::shiftRows(sctRounds,verbose);         
+    rowShifted = SCT::shiftRowsLeft(sctRounds,verbose);         
     if (verbose)                                            // Show step if required
         std::cout << "Output:\t" << rowShifted << "\n";
 
@@ -36,3 +36,41 @@ std::string ES_DES::encrypt(std::string plain, std::string key, bool verbose)
     return encrypted;
 
 } // End encrypt
+
+
+std::string ES_DES::decrypt(std::string cipher, std::string key, bool verbose)
+{
+    // Declare
+    std::string sctRounds, rowShifted;
+
+    // Decrypt with S-DES
+    for (int i = 0; i < cipher.length(); i++)
+    {
+        rowShifted.push_back(S_DES::decrypt(cipher.at(i), key, verbose));
+    } // End for
+
+    if (verbose)                                            // Show step if required
+        std::cout << "S-DES:\t" << rowShifted << "\n\n";
+    
+    // Reverse row shifting
+    sctRounds = SCT::shiftRowsRight(rowShifted,verbose);         
+    if (verbose)                                                // Show step if required
+    {
+        std::cout << "Output:\t" << sctRounds << "\n\n";
+    } // End if                                     
+        
+    // Reverse SCTMR
+    for (int i = 0; i < SCTMR_ROUNDS; i++)
+    {
+        sctRounds = SCT::decrypt(sctRounds,verbose);         
+        if (verbose)                                            // Show step if required
+        {
+            std::cout << "Output:\t" << sctRounds << "\n\n";
+        } // End if        
+
+    } // End for      
+
+    return sctRounds;
+
+
+} // End decrypt

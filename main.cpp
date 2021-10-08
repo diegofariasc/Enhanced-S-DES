@@ -1,4 +1,6 @@
 #include<bitset>
+#include <iostream>
+#include <fstream>
 #include "ES_DES.hpp"
 
 #define BIN 0
@@ -10,18 +12,50 @@ int main(void)
 {
     // Driver code
     // Declare
-    std::string text, key, cipher;
+    std::string text, key, cipher, decrypted;
 
-    // Initialize
+    // ------------ Encryption process ------------
+    // Initialize for encryption 
     text = "DIDYOUSEE";
     key = "0010010111";
-    cipher = ES_DES::encrypt(text,key,true);
+    cipher = ES_DES::encrypt(text,key,false);       // <- Specify true for process to be shown
 
-    // Display ciphertext
-    std::cout << "Final output:\n";
+    // Display acquired ciphertext
+    std::cout << "Final encryption output:\n";
     display(cipher, BIN);
     display(cipher, HEX);
+    std::cout << "Cipher:\t" << cipher << "\n";
     
+    // ------------ Decryption process ------------
+    std::cout << "\n";
+    decrypted = ES_DES::decrypt(cipher, key, false); // <- Specify true for process to be shown
+    std::cout << "Final decryption output:\n";
+    std::cout << "Plain:\t" << decrypted << "\n";
+
+    // ------------ Brute-force attack ------------
+    // Note: Results are stored on attackResults.out
+    // Comment this section if attack isn't required
+    std::ofstream outputFile;
+    outputFile.open ("attackResults.out");
+    for (unsigned int i = 0; i < 1024; i++)
+    {
+        // Declare
+        std::bitset<10> trialKey;
+        std::string trialResult;
+
+        // Initialize
+        // Generate string for 10-bit key i
+        trialKey = std::bitset<10>(i);
+        trialResult = ES_DES::decrypt(cipher, trialKey.to_string());
+
+        outputFile << "Key: " << trialKey << " -> " << trialResult << "\n";
+
+    } // End for
+
+    // Close file
+    outputFile.close();
+    
+    return 0;
 
 } // End main
 
